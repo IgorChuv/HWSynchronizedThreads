@@ -6,23 +6,25 @@ public class Dealer {
     private final int timeToReceive = 3000;
     public final int maxDailyClientCount;
 
-    List<Car> carAvailable = new ArrayList<>();
+    final List<Car> carAvailable = new ArrayList<>();
 
     public Dealer(String dealerName, int IndividualMaxDailyClientCount) {
         this.dealerName = dealerName;
         this.maxDailyClientCount = IndividualMaxDailyClientCount;
     }
 
-    public synchronized void sellCar() {
+    public void sellCar() {
         try {
-            System.out.println(Thread.currentThread().getName() + " пришёл в автосалон " + dealerName);
-            while (carAvailable.size() == 0) {
-                System.out.println("Машин " + dealerName + " нет!");
-                wait();
+            synchronized (this) {
+                System.out.println(Thread.currentThread().getName() + " пришёл в автосалон " + dealerName);
+                while (carAvailable.size() == 0) {
+                    System.out.println("Для " + Thread.currentThread().getName() + " машин " + dealerName + " нет!");
+                    wait();
+                }
             }
             Thread.sleep(timeToBuy);
-            System.out.println(Thread.currentThread().getName() + " уехал на новеньком автомобиле " + dealerName);
             carAvailable.remove(0);
+            System.out.println(Thread.currentThread().getName() + " уехал на новеньком автомобиле " + dealerName);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
@@ -32,15 +34,19 @@ public class Dealer {
         return maxDailyClientCount;
     }
 
-    public synchronized void carReceivement() {
-        try {
-            System.out.println("Отгрузка автомобилей " + dealerName);
-            Thread.sleep(timeToReceive);
-            carAvailable.add(new Car());
-            System.out.println("Отгрузка автомобилей " + dealerName + " завершена");
-            notify();
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+    public void carReceived() {
+
+        synchronized (this) {
+            try {
+                System.out.println("Отгрузка автомобилей " + dealerName);
+                Thread.sleep(timeToReceive);
+                carAvailable.add(new Car());
+                System.out.println("Отгрузка автомобилей " + dealerName + " завершена");
+                notify();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }
+
