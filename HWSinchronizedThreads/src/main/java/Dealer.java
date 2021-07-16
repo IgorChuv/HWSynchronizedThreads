@@ -15,13 +15,15 @@ public class Dealer {
 
     public void sellCar() {
         try {
+            //Начало блока синхронизации
             synchronized (this) {
                 System.out.println(Thread.currentThread().getName() + " пришёл в автосалон " + dealerName);
-                while (carAvailable.size() == 0) {
+                while (carAvailable.isEmpty()) {
                     System.out.println("Для " + Thread.currentThread().getName() + " машин " + dealerName + " нет!");
                     wait();
                 }
             }
+            //Конец блока синхронизации
             Thread.sleep(timeToBuy);
             carAvailable.remove(0);
             System.out.println(Thread.currentThread().getName() + " уехал на новеньком автомобиле " + dealerName);
